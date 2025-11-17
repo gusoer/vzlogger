@@ -338,15 +338,20 @@ bool MeterSML::_parse(sml_list *entry, Reading *rd) {
 			if (!_obis1570abs) {
 
 				// OBIS 15.7.0 values should not be handled as absolute power values
-				print(log_debug, "Value for obis %s: %f (scaler=%d) (status type=%x) (status=%x)", name().c_str(), obis.toString().c_str(),
-				  rd->value(), scaler, (entry->status) ? entry->status->type : 0, (entry->status) ? *entry->status->data.status8 : 0);
+				print(log_debug, "Value for obis %s: %f (scaler=%d) (status type=%x) (status=%x)",
+					  name().c_str(), obis.toString().c_str(), rd->value(), scaler,
+					  (entry->status) ? entry->status->type : 0,
+					  (entry->status) ? *entry->status->data.status8 : 0);
 
-				// determine sign of current power from OBIS 1.8.0 status byte			
+				// determine sign of current power from OBIS 1.8.0 status byte
 				if (Obis(1, 0, 1, 8, 0, 255) == obis) {
-					if (((entry->status) && (entry->status->type == (SML_TYPE_UNSIGNED + SML_TYPE_NUMBER_8 + 1) /*TL=0x62*/) &&
- 						 (*entry->status->data.status8 & 0x20))) { // Status bit 5 ist set (0x20) if we sent power to the grid
+					if (((entry->status) &&
+						 (entry->status->type ==
+						  (SML_TYPE_UNSIGNED + SML_TYPE_NUMBER_8 + 1) /*TL=0x62*/) &&
+						 (*entry->status->data.status8 &
+						  0x20))) { // Status bit 5 ist set (0x20) if we sent power to the grid
 
-						_obis1570sign = -1; // set sign to negative 
+						_obis1570sign = -1; // set sign to negative
 						print(log_debug, "Power sent to grid.", name().c_str());
 					} else {
 
@@ -355,11 +360,12 @@ bool MeterSML::_parse(sml_list *entry, Reading *rd) {
 					}
 				}
 
-				// set the sign of current power (OBIS 15.7.1)			
+				// set the sign of current power (OBIS 15.7.1)
 				if (Obis(1, 0, 15, 7, 0, 255) == obis) {
 					rd->value(rd->value() * _obis1570sign);
 				}
-				print(log_debug, "Value for obis %s: %f (sign=%d)", name().c_str(), obis.toString().c_str(), rd->value(), _obis1570sign);
+				print(log_debug, "Value for obis %s: %f (sign=%d)", name().c_str(),
+					  obis.toString().c_str(), rd->value(), _obis1570sign);
 			}
 		}
 
