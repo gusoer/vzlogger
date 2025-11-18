@@ -346,17 +346,25 @@ bool MeterSML::_parse(sml_list *entry, Reading *rd) {
 				// determine sign of current power from OBIS 1.8.0 status byte
 				if (Obis(1, 0, 1, 8, 0, 255) == obis) {
 					if (((entry->status) &&
-						 (entry->status->type ==
-						  (SML_TYPE_UNSIGNED + SML_TYPE_NUMBER_8 + 1) /*TL=0x62*/) &&
-						 (*entry->status->data.status8 &
-						  0x20))) { // Status bit 5 ist set (0x20) if we sent power to the grid
+						 (entry->status->type == (SML_TYPE_UNSIGNED + SML_TYPE_NUMBER_8 +
+												  1) /*TL=0x62*/))) { // Statusbyte available
 
-						_obis1570sign = -1; // set sign to negative
-						print(log_debug, "Power sent to grid.", name().c_str());
+						if (*entry->status->data.status8 &
+							0x20) { // Status bit 5 ist set (0x20) if we sent power to the grid
+
+							_obis1570sign = -1; // set sign to negative
+							print(log_debug, "Power sent to grid.", name().c_str());
+						} else {
+
+							_obis1570sign = 1; // reset sign to positive
+							print(log_debug, "Power consumend from grid.", name().c_str());
+						}
 					} else {
 
 						_obis1570sign = 1; // reset sign to positive
-						print(log_debug, "Power consumend from grid.", name().c_str());
+						print(log_warning,
+							  "No status byte for OBIS 1.8.0 available, power consumption assumed.",
+							  name().c_str());
 					}
 				}
 
